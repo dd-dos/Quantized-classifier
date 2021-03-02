@@ -100,7 +100,7 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
             loss = criterion(outputs, labels)
 
             running_loss += loss.item()
-
+            break
         average_loss = running_loss/num_samples
         print("val loss: {}".format(average_loss))
         if average_loss < BEST:
