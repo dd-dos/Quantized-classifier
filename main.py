@@ -104,7 +104,7 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
             #     dtype = torch.qint8
             #     inputs = torch.quantize_per_tensor(inputs, scale, zero_point, dtype)
 
-            outputs = net(inputs)
+            outputs = net(inputs.to('cpu'))
             loss = criterion(outputs, labels)
 
             running_loss += loss.item()
