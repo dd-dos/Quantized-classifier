@@ -31,11 +31,13 @@ def train(args):
     net_fp32 = QuantizableMobileNetV2(num_classes=10)
     net_fp32.train()
     net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
-    prepared_net_fp32 = torch.quantization.prepare_qat(net_fp32)
+
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    prepared_net_fp32 = torch.quantization.prepare_qat(net_fp32).to(device)
     '''
     training loop start here
     '''
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss().to(device)
     optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
     for epoch in range(len(args.epoch)):
         running_loss = 0.0
@@ -43,6 +45,8 @@ def train(args):
         for i, data in enumerate(trainloader, 0):
             # get the inputs; data is a list of [inputs, labels]
             inputs, labels = data
+            inputs = inputs.to(device)
+            labels = labels.to(device)
 
             # zero the parameter gradients
             optimizer.zero_grad()
@@ -63,11 +67,13 @@ def train(args):
         print("fp32 evaluation phase:")
         evaluation(prepared_net_fp32, valloader, valset, bitwidths='fp32')
         print("int8 evaluation phase:")
-        evaluation(torch.quantization.convert(prepared_net_fp32), valloader, valset, bitwidths='int8')
+        evaluation(torch.quantization.convert(prepared_net_fp32.to('cpu')), valloader, valset, bitwidths='int8')
     
     '''
     training loop end here
     '''
+    print('Finished Training')
+
     prepared_net_fp32.eval()
     net_int8 = torch.quantization.convert(prepared_net_fp32)
     torch.save(prepared_net_fp32, os.path.join(args.cp, "last_fp32.pth"))
@@ -78,12 +84,15 @@ def evaluation(net, valloader, valset, bitwidths):
     with torch.no_grad():
         global BEST
         num_samples = len(valset)
-
-        net.eval()
+        
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        net.to(device).eval()
         running_loss = 0.0
         for i, data in enumerate(valloader, 0):
             # get the inputs; data is a list of [inputs, labels]
             inputs, labels = data
+            inputs = inputs.to(device)
+            labels = labels.to(device)
 
             # forward + backward + optimize
             outputs = net(inputs)
