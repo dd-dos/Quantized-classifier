@@ -36,7 +36,7 @@ def train(args):
     # net_fp32_fused = torch.quantization.fuse_modules(net_fp32, [['_forward_impl']])
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    prepared_net_fp32 = torch.quantization.prepare_qat(net_fp32_fused).to(device)
+    prepared_net_fp32 = torch.quantization.prepare_qat(net_fp32).to(device)
     '''
     training loop start here
     '''
