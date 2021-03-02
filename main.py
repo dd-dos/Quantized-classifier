@@ -101,7 +101,7 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
             if bitwidths=='int8':
                 scale, zero_point = 1e-4, 2
                 dtype = torch.qint8
-                inputs = torch.quantize_per_tensor(inputs, scale, zero_point, dtype)
+                inputs = torch.quantize_per_tensor(inputs, scale, zero_point, dtype).cpu()
 
             outputs = net(inputs)
             loss = criterion(outputs, labels)
