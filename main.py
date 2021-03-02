@@ -33,7 +33,7 @@ def train(args):
     print(dir(net_fp32))
     net_fp32.train()
     net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
-    net_fp32_fused = torch.quantization.fuse_modules(net_fp32, [['Conv2d', 'BatchNorm2d', 'ReLU6']])
+    net_fp32_fused = torch.quantization.fuse_modules(net_fp32, [['_forward_impl']])
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     prepared_net_fp32 = torch.quantization.prepare_qat(net_fp32_fused).to(device)
