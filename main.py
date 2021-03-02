@@ -42,28 +42,28 @@ def train(args):
     optimizer = optim.SGD(prepared_net_fp32.parameters(), lr=0.001, momentum=0.9)
     for epoch in range(args.num_epoches):
         running_loss = 0.0
-        print("training phase:")
-        for i, data in enumerate(trainloader, 0):
-            # get the inputs; data is a list of [inputs, labels]
-            inputs, labels = data
-            inputs = inputs.to(device)
-            labels = labels.to(device)
+        # print("training phase:")
+        # for i, data in enumerate(trainloader, 0):
+        #     # get the inputs; data is a list of [inputs, labels]
+        #     inputs, labels = data
+        #     inputs = inputs.to(device)
+        #     labels = labels.to(device)
 
-            # zero the parameter gradients
-            optimizer.zero_grad()
+        #     # zero the parameter gradients
+        #     optimizer.zero_grad()
 
-            # forward + backward + optimize
-            outputs = prepared_net_fp32(inputs)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
+        #     # forward + backward + optimize
+        #     outputs = prepared_net_fp32(inputs)
+        #     loss = criterion(outputs, labels)
+        #     loss.backward()
+        #     optimizer.step()
 
-            # print statistics
-            running_loss += loss.item()
-            if i % 35 == 34:    
-                print('[%d, %5d] loss: %.3f' %
-                    (epoch + 1, i + 1, running_loss / (35*args.batch_size)))
-                running_loss = 0.0
+        #     # print statistics
+        #     running_loss += loss.item()
+        #     if i % 35 == 34:    
+        #         print('[%d, %5d] loss: %.3f' %
+        #             (epoch + 1, i + 1, running_loss / (35*args.batch_size)))
+        #         running_loss = 0.0
         
         print("fp32 evaluation phase:")
         evaluation(args, prepared_net_fp32, valloader, criterion, valset, args.cp, bitwidths='fp32')
@@ -108,7 +108,7 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
         average_loss = running_loss/num_samples
         if average_loss < BEST:
             BEST = average_loss
-            torch.save(net, os.path.join(checkpoint, "{}_best.pth".format(bitwidths)))
+            torch.save(net.state_dict(), os.path.join(checkpoint, "{}_best.pth".format(bitwidths)))
 
 
 def argparser():
