@@ -32,9 +32,10 @@ def train(args):
     net_fp32 = QuantizableMobileNetV2(num_classes=10)
     net_fp32.train()
     net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
+    net_fp32_fused = torch.quantization.fuse_modules(net_fp32, [['conv', 'bn', 'relu']])
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    prepared_net_fp32 = torch.quantization.prepare_qat(net_fp32).to(device)
+    prepared_net_fp32 = torch.quantization.prepare_qat(net_fp32_fused).to(device)
     '''
     training loop start here
     '''
@@ -98,17 +99,13 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
             outputs = net(inputs)
             loss = criterion(outputs, labels)
 
-            # print statistics
             running_loss += loss.item()
-            if i % 10 == 9:    # print every 2000 mini-batches
-                print('current loss: %.3f' %
-                    (running_loss / (10*args.batch_size)))
-                running_loss = 0.0
-        
+
         average_loss = running_loss/num_samples
+        print("val loss: {}".format(average_loss))
         if average_loss < BEST:
             BEST = average_loss
-            torch.save(net.state_dict(), os.path.join(checkpoint, "{}_best.pth".format(bitwidths)))
+            torch.save(net, os.path.join(checkpoint, "{}_best.pth".format(bitwidths)))
 
 
 def argparser():
