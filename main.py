@@ -93,8 +93,8 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
         for i, data in enumerate(valloader, 0):
             # get the inputs; data is a list of [inputs, labels]
             inputs, labels = data
-            inputs = inputs.to(device)
-            labels = labels.to(device)
+            # inputs = inputs.to(device)
+            # labels = labels.to(device)
 
             outputs = net(inputs)
             loss = criterion(outputs, labels)
