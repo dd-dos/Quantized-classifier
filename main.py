@@ -30,7 +30,7 @@ def train(args):
             'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
     
     net_fp32 = QuantizableMobileNetV2(num_classes=10)
-    print(getattr(net_fp32))
+    print(dir(net_fp32))
     net_fp32.train()
     net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
     net_fp32_fused = torch.quantization.fuse_modules(net_fp32, [['Conv2d', 'BatchNorm2d', 'ReLU6']])
