@@ -11,6 +11,7 @@ import numpy as np
 from torchvision.models.quantization import QuantizableMobileNetV2
 BEST = np.inf
 def train(args):
+    os.makedirs(args.cp, exist_ok=True)
     transform = transforms.Compose(
         [transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
@@ -65,9 +66,9 @@ def train(args):
                 running_loss = 0.0
         
         print("fp32 evaluation phase:")
-        evaluation(prepared_net_fp32, valloader, valset, bitwidths='fp32')
+        evaluation(prepared_net_fp32, valloader, valset, bitwidths='fp32', args.cp)
         print("int8 evaluation phase:")
-        evaluation(torch.quantization.convert(prepared_net_fp32.to('cpu')), valloader, valset, bitwidths='int8')
+        evaluation(torch.quantization.convert(prepared_net_fp32.to('cpu')), valloader, valset, bitwidths='int8', args.cp)
     
     '''
     training loop end here
@@ -80,7 +81,7 @@ def train(args):
     torch.save(net_int8, os.path.join(args.cp, "last_int8.pth"))
 
 
-def evaluation(net, valloader, valset, bitwidths): 
+def evaluation(net, valloader, valset, bitwidths, checkpoint): 
     with torch.no_grad():
         global BEST
         num_samples = len(valset)
@@ -107,7 +108,7 @@ def evaluation(net, valloader, valset, bitwidths):
         average_loss = running_loss/num_samples
         if average_loss < BEST:
             BEST = average_loss
-            torch.save(net, "{}_best.pth".format(bitwidths))
+            torch.save(net, os.path.join(checkpoint, "{}_best.pth".format(bitwidths)))
 
 
 def argparser():
