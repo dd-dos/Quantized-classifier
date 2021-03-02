@@ -66,10 +66,10 @@ def train(args):
         #             (epoch + 1, i + 1, running_loss / (35*args.batch_size)))
         #         running_loss = 0.0
         
-        print("fp32 evaluation phase:")
-        evaluation(args, prepared_net_fp32, valloader, criterion, valset, args.cp, bitwidths='fp32')
+        # print("fp32 evaluation phase:")
+        # evaluation(args, prepared_net_fp32, valloader, criterion, valset, args.cp, bitwidths='fp32')
         print("int8 evaluation phase:")
-        evaluation(args, torch.quantization.convert(prepared_net_fp32.to('cpu')), valloader, criterion, valset, args.cp, bitwidths='int8')
+        evaluation(args, torch.quantization.convert(prepared_net_fp32), valloader, criterion, valset, args.cp, bitwidths='int8')
     
     '''
     training loop end here
