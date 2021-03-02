@@ -32,9 +32,9 @@ def train(args):
     net_fp32 = QuantizableMobileNetV2(num_classes=10)
     print(dir(net_fp32))
     net_fp32.train()
-    net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
+    net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('qnnpack') #qnnpack for pc; qnnpack for mobile
     print(torch.backends.quantized.supported_engines)
-    torch.backends.quantized.engine='fbgemm'
+    torch.backends.quantized.engine='qnnpack'
     # net_fp32_fused = torch.quantization.fuse_modules(net_fp32, [['_forward_impl']])
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
