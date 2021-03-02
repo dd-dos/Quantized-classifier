@@ -71,7 +71,7 @@ def train(args):
         # evaluation(args, prepared_net_fp32, valloader, criterion, valset, args.cp, bitwidths='fp32')
         print("int8 evaluation phase:")
         net_int8 = torch.quantization.convert(prepared_net_fp32.eval().cpu())
-        print(net_int8)
+        # print(net_int8)
         evaluation(args, net_int8, valloader, criterion, valset, args.cp, bitwidths='int8')
     
     '''
