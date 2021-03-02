@@ -99,10 +99,10 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
             inputs = inputs.to(device)
             labels = labels.to(device)
 
-            if bitwidths=='int8':
-                scale, zero_point = 1e-4, 2
-                dtype = torch.qint8
-                inputs = torch.quantize_per_tensor(inputs, scale, zero_point, dtype)
+            # if bitwidths=='int8':
+            #     scale, zero_point = 1e-4, 2
+            #     dtype = torch.qint8
+            #     inputs = torch.quantize_per_tensor(inputs, scale, zero_point, dtype)
 
             outputs = net(inputs)
             loss = criterion(outputs, labels)
