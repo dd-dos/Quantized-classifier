@@ -120,4 +120,6 @@ def argparser():
 
     return args
 
-if __name__=="__main__""
+if __name__=="__main__":
+    args = argparser()
+    train(args)
