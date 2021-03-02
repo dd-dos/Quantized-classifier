@@ -91,7 +91,7 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
         num_samples = len(valset)
         
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-        net.eval()
+        net.cpu().eval()
         net_int8 = torch.quantization.convert(net)
         running_loss = 0.0
         for i, data in enumerate(valloader, 0):
