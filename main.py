@@ -39,7 +39,7 @@ def train(args):
     training loop start here
     '''
     criterion = nn.CrossEntropyLoss().to(device)
-    optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+    optimizer = optim.SGD(prepared_net_fp32.parameters(), lr=0.001, momentum=0.9)
     for epoch in range(len(args.epoch)):
         running_loss = 0.0
         print("training phase:")
