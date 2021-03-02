@@ -103,7 +103,7 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
             # if bitwidths=='int8':
             #     net(inputs)
 
-            outputs = net_int8(inputs)
+            outputs = net_int8(inputs.cpu())
             loss = criterion(outputs, labels)
 
             running_loss += loss.item()
