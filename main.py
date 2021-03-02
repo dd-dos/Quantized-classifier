@@ -65,12 +65,13 @@ def train(args):
                 print('[%d, %5d] loss: %.3f' %
                     (epoch + 1, i + 1, running_loss / (35*args.batch_size)))
                 running_loss = 0.0
-        
-        print("fp32 evaluation phase:")
-        evaluation(args, prepared_net_fp32, valloader, criterion, valset, args.cp, bitwidths='fp32')
+                
         print("int8 evaluation phase:")
         net_int8 = torch.quantization.convert(prepared_net_fp32.cpu().eval())
         evaluation(args, net_int8, valloader, criterion, valset, args.cp, bitwidths='int8')
+        print("fp32 evaluation phase:")
+        evaluation(args, prepared_net_fp32, valloader, criterion, valset, args.cp, bitwidths='fp32')
+
     
     '''
     training loop end here
@@ -107,7 +108,7 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
         print("val loss: {}".format(average_loss))
         if average_loss < BEST:
             BEST = average_loss
-            print("saving model at {}!".format(checkpoint))
+            print("saving model at {}".format(checkpoint))
             torch.save(net.state_dict(), os.path.join(checkpoint, "{}_best.pth".format(bitwidths)))
 
 
