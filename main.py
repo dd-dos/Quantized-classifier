@@ -113,7 +113,7 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
         print("val loss: {}".format(average_loss))
         if average_loss < BEST:
             BEST = average_loss
-            torch.save(net, os.path.join(checkpoint, "{}_best.pth".format(bitwidths)))
+            torch.save(net.state_dict(), os.path.join(checkpoint, "{}_best.pth".format(bitwidths)))
 
 
 def argparser():
