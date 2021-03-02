@@ -40,7 +40,7 @@ def train(args):
     '''
     criterion = nn.CrossEntropyLoss().to(device)
     optimizer = optim.SGD(prepared_net_fp32.parameters(), lr=0.001, momentum=0.9)
-    for epoch in range(len(args.num_epoches)):
+    for epoch in range(args.num_epoches):
         running_loss = 0.0
         print("training phase:")
         for i, data in enumerate(trainloader, 0):
