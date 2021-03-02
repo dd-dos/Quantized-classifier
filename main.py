@@ -40,7 +40,7 @@ def train(args):
     '''
     criterion = nn.CrossEntropyLoss().to(device)
     optimizer = optim.SGD(prepared_net_fp32.parameters(), lr=0.001, momentum=0.9)
-    for epoch in range(len(args.epoch)):
+    for epoch in range(len(args.num_epoches)):
         running_loss = 0.0
         print("training phase:")
         for i, data in enumerate(trainloader, 0):
@@ -116,6 +116,7 @@ def argparser():
     P.add_argument('--batch_size', type=int, required=True, help='batch size')
     P.add_argument('--num_workers', type=int, default=8, help='number of workers')
     P.add_argument('--cp', type=str, required=True, help='checkpoint')
+    P.add_argument('--num_epoches', type=int, default=666, help='number of epoches')
     args = P.parse_args()
 
     return args
