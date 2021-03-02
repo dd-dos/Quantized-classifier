@@ -70,9 +70,9 @@ def train(args):
         # print("fp32 evaluation phase:")
         # evaluation(args, prepared_net_fp32, valloader, criterion, valset, args.cp, bitwidths='fp32')
         print("int8 evaluation phase:")
-        net_int8 = torch.quantization.convert(prepared_net_fp32.eval().cpu())
+        # net_int8 = torch.quantization.convert(prepared_net_fp32.eval().cpu())
         # print(net_int8)
-        evaluation(args, net_int8, valloader, criterion, valset, args.cp, bitwidths='int8')
+        evaluation(args, prepared_net_fp32, valloader, criterion, valset, args.cp, bitwidths='int8')
     
     '''
     training loop end here
@@ -91,20 +91,19 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
         num_samples = len(valset)
         
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-        net.cpu().eval()
+        net.to(device).eval()
+        net_int8 = torch.quantization.convert(net)
         running_loss = 0.0
         for i, data in enumerate(valloader, 0):
             # get the inputs; data is a list of [inputs, labels]
             inputs, labels = data
-            # inputs = inputs.to(device)
-            # labels = labels.to(device)
+            inputs = inputs.to(device)
+            labels = labels.to(device)
 
             # if bitwidths=='int8':
-            #     scale, zero_point = 1e-4, 2
-            #     dtype = torch.qint8
-            #     inputs = torch.quantize_per_tensor(inputs, scale, zero_point, dtype)
+            #     net(inputs)
 
-            outputs = net(inputs.to('cpu'))
+            outputs = net_int8(inputs)
             loss = criterion(outputs, labels)
 
             running_loss += loss.item()
