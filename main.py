@@ -70,7 +70,8 @@ def train(args):
         # print("fp32 evaluation phase:")
         # evaluation(args, prepared_net_fp32, valloader, criterion, valset, args.cp, bitwidths='fp32')
         print("int8 evaluation phase:")
-        evaluation(args, torch.quantization.convert(prepared_net_fp32), valloader, criterion, valset, args.cp, bitwidths='int8')
+        net_int8 = torch.quantization.convert(prepared_net_fp32.eval())
+        evaluation(args, net_int8, valloader, criterion, valset, args.cp, bitwidths='int8')
     
     '''
     training loop end here
@@ -97,10 +98,10 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
             inputs = inputs.to(device)
             labels = labels.to(device)
 
-            if bitwidths=='int8':
-                scale, zero_point = 1e-4, 2
-                dtype = torch.qint8
-                inputs = torch.quantize_per_tensor(inputs, scale, zero_point, dtype)
+            # if bitwidths=='int8':
+            #     scale, zero_point = 1e-4, 2
+            #     dtype = torch.qint8
+            #     inputs = torch.quantize_per_tensor(inputs, scale, zero_point, dtype)
 
             outputs = net(inputs)
             loss = criterion(outputs, labels)
