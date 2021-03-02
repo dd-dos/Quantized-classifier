@@ -96,8 +96,8 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
         for i, data in enumerate(valloader, 0):
             # get the inputs; data is a list of [inputs, labels]
             inputs, labels = data
-            inputs = inputs.to(device)
-            labels = labels.to(device)
+            # inputs = inputs.to(device)
+            # labels = labels.to(device)
 
             # if bitwidths=='int8':
             #     scale, zero_point = 1e-4, 2
