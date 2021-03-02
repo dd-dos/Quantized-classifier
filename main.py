@@ -33,6 +33,7 @@ def train(args):
     print(dir(net_fp32))
     net_fp32.train()
     net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
+    print(torch.backends.quantized.supported_engines)
     torch.backends.quantized.engine='fbgemm'
     # net_fp32_fused = torch.quantization.fuse_modules(net_fp32, [['_forward_impl']])
 
