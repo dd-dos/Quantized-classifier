@@ -100,9 +100,9 @@ def evaluation(net, valloader, criterion, valset, checkpoint, bitwidths):
 
             # print statistics
             running_loss += loss.item()
-            if i % 100 == 1:    # print every 2000 mini-batches
-                print('[%d, %5d] loss: %.3f' %
-                    (epoch + 1, i + 1, running_loss / 100))
+            if i % 10 == 9:    # print every 2000 mini-batches
+                print('current loss: %.3f' %
+                    (running_loss / 640))
                 running_loss = 0.0
         
         average_loss = running_loss/num_samples
