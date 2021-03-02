@@ -30,11 +30,9 @@ def train(args):
             'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
     
     net_fp32 = mobilenet_v2(num_classes=10)
-    print(dir(net_fp32))
     net_fp32.train()
     net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
     torch.backends.quantized.engine='fbgemm'
-    # net_fp32_fused = torch.quantization.fuse_modules(net_fp32, [['_forward_impl']])
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     prepared_net_fp32 = torch.quantization.prepare_qat(net_fp32).to(device)
@@ -68,12 +66,11 @@ def train(args):
         #             (epoch + 1, i + 1, running_loss / (35*args.batch_size)))
         #         running_loss = 0.0
         
-        # print("fp32 evaluation phase:")
-        # evaluation(args, prepared_net_fp32, valloader, criterion, valset, args.cp, bitwidths='fp32')
+        print("fp32 evaluation phase:")
+        evaluation(args, prepared_net_fp32, valloader, criterion, valset, args.cp, bitwidths='fp32')
         print("int8 evaluation phase:")
-        # net_int8 = torch.quantization.convert(prepared_net_fp32.eval().cpu())
-        # print(net_int8)
-        evaluation(args, prepared_net_fp32, valloader, criterion, valset, args.cp, bitwidths='int8')
+        net_int8 = torch.quantization.convert(prepared_net_fp32.eval())
+        evaluation(args, net_int8, valloader, criterion, valset, args.cp, bitwidths='int8')
     
     '''
     training loop end here
@@ -92,19 +89,14 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
         num_samples = len(valset)
         
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-        net.cpu().eval()
-        net_int8 = torch.quantization.convert(net)
         running_loss = 0.0
         for i, data in enumerate(valloader, 0):
             # get the inputs; data is a list of [inputs, labels]
             inputs, labels = data
-            inputs = inputs
-            labels = labels
+            inputs = inputs.to(device)
+            labels = labels.to(device)
 
-            # if bitwidths=='int8':
-            #     net(inputs)
-
-            outputs = net_int8(inputs)
+            outputs = net(inputs)
             loss = criterion(outputs, labels)
 
             running_loss += loss.item()
