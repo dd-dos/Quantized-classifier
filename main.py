@@ -127,17 +127,18 @@ def test_qtmodel(checkpoint):
     transform = transforms.Compose(
         [transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-    # valset = torchvision.datasets.CIFAR10(root='./data', train=False,
-    #                                     download=True, transform=transform)
-    # valloader = torch.utils.data.DataLoader(valset, batch_size=1,
-    #                                         shuffle=False, num_workers=8)
-    trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
-                                            download=True, transform=transform)
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=64,
-                                            shuffle=True, num_workers=8)
-    loader = trainloader
+    valset = torchvision.datasets.CIFAR10(root='./data', train=False,
+                                        download=True, transform=transform)
+    valloader = torch.utils.data.DataLoader(valset, batch_size=64,
+                                            shuffle=False, num_workers=8)
+    # trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
+    #                                         download=True, transform=transform)
+    # trainloader = torch.utils.data.DataLoader(trainset, batch_size=64,
+    #                                         shuffle=True, num_workers=8)
+    loader = valloader
+    dataset = valset
     with torch.no_grad():
-        num_samples = len(trainset)
+        num_samples = len(dataset)
         counter = 0
         for i, data in enumerate(loader, 0):
             inputs, labels = data
@@ -165,21 +166,22 @@ def test_fp32_model(checkpoint):
     transform = transforms.Compose(
             [transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-    # valset = torchvision.datasets.CIFAR10(root='./data', train=False,
-    #                                     download=True, transform=transform)
-    # valloader = torch.utils.data.DataLoader(valset, batch_size=64,
-    #                                         shuffle=False, num_workers=8)
-    trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
-                                            download=True, transform=transform)
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=64,
-                                            shuffle=True, num_workers=8)
-    loader = trainloader
+    valset = torchvision.datasets.CIFAR10(root='./data', train=False,
+                                        download=True, transform=transform)
+    valloader = torch.utils.data.DataLoader(valset, batch_size=64,
+                                            shuffle=False, num_workers=8)
+    # trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
+    #                                         download=True, transform=transform)
+    # trainloader = torch.utils.data.DataLoader(trainset, batch_size=64,
+    #                                         shuffle=True, num_workers=8)
+    loader = valloader
+    dataset = valset
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     net_fp32.to(device)
     with torch.no_grad():
-        num_samples = len(trainset)
+        num_samples = len(dataset)
         counter = 0
-        for i, data in enumerate(loader, 0):
+        for i, data in tqdm(enumerate(loader, 0)):
             inputs, labels = data
             inputs = inputs.to(device)
             out = net_fp32(inputs).cpu().numpy()
@@ -187,8 +189,6 @@ def test_fp32_model(checkpoint):
 
             labels = labels.cpu().numpy()
             diff = out - labels
-            print(diff)
-            print("+++++++++++++++++++++++++++")
             counter += len(np.where(diff==0)[0])
     return counter/num_samples*100
 
