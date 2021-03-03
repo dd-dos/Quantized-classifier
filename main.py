@@ -127,8 +127,8 @@ def test_qtmodel(checkpoint):
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
     valset = torchvision.datasets.CIFAR10(root='./data', train=False,
                                         download=True, transform=transform)
-    valloader = torch.utils.data.DataLoader(valset, batch_size=args.batch_size,
-                                            shuffle=False, num_workers=args.num_workers)
+    valloader = torch.utils.data.DataLoader(valset, batch_size=64,
+                                            shuffle=False, num_workers=8)
     with torch.no_grad():
         num_samples = len(valset)
 
