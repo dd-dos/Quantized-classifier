@@ -46,7 +46,7 @@ def train(args):
     for epoch in range(args.num_epoches):
         running_loss = 0.0
         counter = 0.0
-        print("training phase:")
+        print("=> training phase:")
         for i, data in enumerate(trainloader, 0):
             # get the inputs; data is a list of [inputs, labels]
             inputs, labels = data
@@ -77,10 +77,10 @@ def train(args):
                 running_loss = 0.0
                 counter = 0
 
-        print("int8 evaluation phase:")
+        print("=> int8 evaluation phase:")
         net_int8 = torch.quantization.convert(prepared_net_fp32.cpu().eval())
         evaluation(args, net_int8, valloader, criterion, valset, args.cp, bitwidths='int8')
-        print("fp32 evaluation phase:")
+        print("=> fp32 evaluation phase:")
         evaluation(args, prepared_net_fp32, valloader, criterion, valset, args.cp, bitwidths='fp32')
 
     
@@ -125,10 +125,10 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
 
         accuracy = counter/num_samples
         average_loss = running_loss/num_samples
-        print("=> val loss: {:.3f} - val acc: {:.3f}".format(average_loss, accuracy))
+        print("==> val loss: {:.3f} - val acc: {:.3f}".format(average_loss, accuracy))
         if accuracy > BEST_ACC:
             BEST_ACC = accuracy
-            print("==> saving model at {}".format(checkpoint))
+            print("===> saving model at {}".format(checkpoint))
             torch.save(net.state_dict(), os.path.join(checkpoint, "{}_best.pth".format(bitwidths)))
 
 
