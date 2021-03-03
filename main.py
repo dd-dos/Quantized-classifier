@@ -131,7 +131,7 @@ def test_qtmodel(checkpoint):
                                             shuffle=False, num_workers=8)
     with torch.no_grad():
         num_samples = len(valset)
-        coutner = 0
+        counter = 0
         for i, data in enumerate(valloader, 0):
             inputs, labels = data
             # inputs = inputs.to(device)
