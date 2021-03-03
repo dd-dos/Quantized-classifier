@@ -138,7 +138,7 @@ def test_qtmodel(checkpoint):
             out = net_int8(inputs).cpu().numpy()
             out = np.argmax(out, axis=1)
 
-            # labels = labels.cpu().numpy()
+            labels = labels.cpu().numpy()
             diff = out - labels
             counter += len(np.where(diff==0)[0])
         
