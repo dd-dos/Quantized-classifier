@@ -145,7 +145,7 @@ def test_qtmodel(checkpoint, split='val'):
     transform = transforms.Compose(
         [transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-        
+
     valset = torchvision.datasets.CIFAR10(root='./data', train=False,
                                         download=True, transform=transform)
     valloader = torch.utils.data.DataLoader(valset, batch_size=64,
@@ -232,7 +232,7 @@ def argparser():
     return args
 
 if __name__=="__main__":
-    args = argparser()
-    train(args)
-    # print(test_qtmodel("/content/drive/MyDrive/training/Quantized-classifier/int8_best.pth"))
+    # args = argparser()
+    # train(args)
+    print(test_qtmodel("/content/drive/MyDrive/training/Quantized-classifier/int8_best.pth"))
     # print(test_fp32_model("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth"))
