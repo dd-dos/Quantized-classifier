@@ -239,5 +239,5 @@ def argparser():
 if __name__=="__main__":
     # args = argparser()
     # train(args)
-    # print(test_qtmodel("/content/drive/MyDrive/training/Quantized-classifier/int8_best.pth", split='val'))
-    print(test_fp32_model("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth", split='val'))
+    print(test_qtmodel("/content/drive/MyDrive/training/Quantized-classifier/int8_best.pth", split='val'))
+    # print(test_fp32_model("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth", split='val'))
