@@ -9,6 +9,7 @@ import argparse
 import numpy as np
 
 from torchvision.models.quantization import mobilenet_v2
+from tqdm import tqdm
 BEST = np.inf
 def train(args):
     os.makedirs(args.cp, exist_ok=True)
@@ -136,9 +137,9 @@ def test_qtmodel(checkpoint):
                                             shuffle=True, num_workers=8)
     loader = trainloader
     with torch.no_grad():
-        num_samples = len(valset)
+        num_samples = len(trainset)
         counter = 0
-        for i, data in enumerate(loader, 0):
+        for i, data in tqdm(enumerate(loader, 0)):
             inputs, labels = data
             # inputs = inputs.to(device)
             out = net_int8(inputs).cpu().numpy()
