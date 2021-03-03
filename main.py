@@ -153,6 +153,8 @@ def test_fp32_model(checkpoint):
     net_fp32.train()
     net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
     torch.backends.quantized.engine='fbgemm'
+    net_fp32 = torch.quantization.prepare_qat(net_fp32)
+
     net_fp32.eval()
     transform = transforms.Compose(
             [transforms.ToTensor(),
