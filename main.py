@@ -64,7 +64,7 @@ def train(args):
 
             # print statistics
             running_loss += loss.item()
-            outputs = outputs.cpu().numpy()
+            outputs = outputs.detach().cpu().numpy()
             outputs = np.argmax(outputs, axis=1)
             labels = labels.cpu().numpy()
             diff = out - labels
