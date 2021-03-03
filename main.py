@@ -175,7 +175,7 @@ def test_qtmodel(checkpoint, split='val'):
     return counter/num_samples*100
 
 
-def test_fp32_model(checkpoint):
+def test_fp32_model(checkpoint, split='val'):
     net_fp32 = mobilenet_v2(num_classes=10)
     net_fp32.train()
     net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
