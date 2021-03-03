@@ -155,11 +155,11 @@ def test_qtmodel(checkpoint):
 
 def test_fp32_model(checkpoint):
     net_fp32 = mobilenet_v2(num_classes=10)
-    net_fp32.load_state_dict(torch.load(checkpoint))
     net_fp32.train()
     net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
     torch.backends.quantized.engine='fbgemm'
     net_fp32 = torch.quantization.prepare_qat(net_fp32)
+    net_fp32.load_state_dict(torch.load(checkpoint))
 
     net_fp32.eval()
     transform = transforms.Compose(
@@ -169,12 +169,16 @@ def test_fp32_model(checkpoint):
     #                                     download=True, transform=transform)
     # valloader = torch.utils.data.DataLoader(valset, batch_size=64,
     #                                         shuffle=False, num_workers=8)
-    
+    trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
+                                            download=True, transform=transform)
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=64,
+                                            shuffle=True, num_workers=8)
+    loader = trainloader
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     with torch.no_grad():
-        num_samples = len(valset)
+        num_samples = len(trainset)
         counter = 0
-        for i, data in enumerate(valloader, 0):
+        for i, data in enumerate(loader, 0):
             inputs, labels = data
             inputs = inputs.to(device)
             out = net_fp32(inputs).cpu().numpy()
@@ -182,7 +186,8 @@ def test_fp32_model(checkpoint):
 
             labels = labels.cpu().numpy()
             diff = out - labels
-
+            print(diff)
+            print("+++++++++++++++++++++++++++")
             counter += len(np.where(diff==0)[0])
     return counter/num_samples*100
 
@@ -199,5 +204,5 @@ def argparser():
 if __name__=="__main__":
     # args = argparser()
     # train(args)
-    print(test_qtmodel("/content/drive/MyDrive/training/Quantized-classifier/int8_best.pth"))
-    # print(test_fp32_model("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth"))
+    # print(test_qtmodel("/content/drive/MyDrive/training/Quantized-classifier/int8_best.pth"))
+    print(test_fp32_model("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth"))
