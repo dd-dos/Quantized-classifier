@@ -117,7 +117,6 @@ def test_qtmodel(checkpoint):
     net_fp32.train()
     net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
     torch.backends.quantized.engine='fbgemm'
-    import ipdb; ipdb.set_trace()
     net = net.load_state_dict(torch.load(checkpoint))
 
     valset = torchvision.datasets.CIFAR10(root='./data', train=False,
@@ -127,24 +126,19 @@ def test_qtmodel(checkpoint):
     with torch.no_grad():
         num_samples = len(valset)
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-        running_loss = 0.0
+
         for i, data in enumerate(valloader, 0):
             inputs, labels = data
+            inputs = inputs.to(device)
+            out = net(inputs).cpu().numpy()
+            out = np.argmax(out, axis=1)
 
-            outputs = net(inputs)
-            import ipdb; ipdb.set_trace()
-            loss = criterion(outputs, labels)
-
-            running_loss += loss.item()
-
-        average_loss = running_loss/num_samples
-        print("val loss: {}".format(average_loss))
-        if average_loss < BEST:
-            BEST = average_loss
-            print("saving model at {}".format(checkpoint))
-            torch.save(net.state_dict(), os.path.join(checkpoint, "{}_best.pth".format(bitwidths)))
-
-
+            labels = labels.cpu().numpy()
+            diff = out - labels
+            counter += len(np.where(diff==0)[0])
+        
+    return counter/num_samples*100
+            
 def argparser():
     P = argparse.ArgumentParser(description='Cifar-10 classifier')
     P.add_argument('--batch_size', type=int, required=True, help='batch size')
@@ -158,4 +152,4 @@ def argparser():
 if __name__=="__main__":
     # args = argparser()
     # train(args)
-    test_qtmodel("./int8_mobilenet_v2.pth")
+    print(test_qtmodel("./int8_mobilenet_v2.pth"))
