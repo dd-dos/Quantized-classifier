@@ -141,7 +141,7 @@ def test_qtmodel(checkpoint, split='val'):
     prepared_net_fp32 = torch.quantization.prepare_qat(net_fp32)
     prepared_net_fp32.load_state_dict(torch.load(checkpoint))
     net_int8 = torch.quantization.convert(prepared_net_fp32.cpu().eval())
-    # net_int8.load_state_dict(torch.load(checkpoint))
+    net_int8.load_state_dict(torch.load(checkpoint))
     # print(torch.load(checkpoint))
     for name, param in net_int8.named_parameters():
         print("name: {} - param type: {} \n".format(name, param.data.dtype))
@@ -239,5 +239,5 @@ def argparser():
 if __name__=="__main__":
     # args = argparser()
     # train(args)
-    print(test_qtmodel("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth"))
+    print(test_qtmodel("/content/drive/MyDrive/training/Quantized-classifier/int8_best.pth"))
     # print(test_fp32_model("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth"))
