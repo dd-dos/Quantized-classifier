@@ -145,7 +145,34 @@ def test_qtmodel(checkpoint):
             counter += len(np.where(diff==0)[0])
             print("+++++++++++++++++++++++++++++")
     return counter/num_samples*100
-            
+
+
+def test_fp32_model(checkpoint):
+    net_fp32 = mobilenet_v2(num_classes=10)
+    net_fp32.load_state_dict(checkpoint)
+    transform = transforms.Compose(
+            [transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+    valset = torchvision.datasets.CIFAR10(root='./data', train=False,
+                                        download=True, transform=transform)
+    valloader = torch.utils.data.DataLoader(valset, batch_size=64,
+                                            shuffle=False, num_workers=8)
+    
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    with torch.no_grad():
+        num_samples = len(valset)
+        counter = 0
+        for i, data in enumerate(valloader, 0):
+            inputs, labels = data
+            inputs = inputs.to(device)
+            out = net_fp32(inputs).cpu().numpy()
+            out = np.argmax(out, axis=1)
+
+            labels = labels.cpu().numpy()
+            diff = out - labels
+            counter += len(np.where(diff==0)[0])
+    return counter/num_samples*100
+
 def argparser():
     P = argparse.ArgumentParser(description='Cifar-10 classifier')
     P.add_argument('--batch_size', type=int, required=True, help='batch size')
@@ -159,4 +186,5 @@ def argparser():
 if __name__=="__main__":
     # args = argparser()
     # train(args)
-    print(test_qtmodel("/content/drive/MyDrive/training/Quantized-classifier/int8_best.pth"))
+    # print(test_qtmodel("/content/drive/MyDrive/training/Quantized-classifier/int8_best.pth"))
+    print(test_fp32_model("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth"))
