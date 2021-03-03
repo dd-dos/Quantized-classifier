@@ -139,7 +139,7 @@ def test_qtmodel(checkpoint):
     with torch.no_grad():
         num_samples = len(trainset)
         counter = 0
-        for i, data in tqdm(enumerate(loader, 0)):
+        for i, data in enumerate(loader, 0):
             inputs, labels = data
             # inputs = inputs.to(device)
             out = net_int8(inputs).cpu().numpy()
@@ -147,6 +147,8 @@ def test_qtmodel(checkpoint):
 
             labels = labels.cpu().numpy()
             diff = out - labels
+            print(diff)
+            print("++++++++++++++++++++++++++++")
             counter += len(np.where(diff==0)[0])
     return counter/num_samples*100
 
@@ -180,6 +182,7 @@ def test_fp32_model(checkpoint):
 
             labels = labels.cpu().numpy()
             diff = out - labels
+
             counter += len(np.where(diff==0)[0])
     return counter/num_samples*100
 
