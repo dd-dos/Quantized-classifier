@@ -145,7 +145,7 @@ def test_qtmodel(checkpoint, split='val'):
     net_int8.load_state_dict(torch.load(checkpoint))
     # print(torch.load(checkpoint))
     for name, param in net_int8.named_parameters():
-        print("name: {} - param type: {} \n".format(name, param.data.dtype))
+        print("name: {} - param type: {} \n".format(name, param.data))
     net_int8.eval()
 
     transform = transforms.Compose(
