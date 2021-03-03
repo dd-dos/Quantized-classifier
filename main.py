@@ -127,7 +127,7 @@ def test_qtmodel(checkpoint):
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
     valset = torchvision.datasets.CIFAR10(root='./data', train=False,
                                         download=True, transform=transform)
-    valloader = torch.utils.data.DataLoader(valset, batch_size=64,
+    valloader = torch.utils.data.DataLoader(valset, batch_size=1,
                                             shuffle=False, num_workers=8)
     with torch.no_grad():
         num_samples = len(valset)
@@ -140,7 +140,7 @@ def test_qtmodel(checkpoint):
             out = np.argmax(out, axis=1)
 
             labels = labels.cpu().numpy()
-            print(label)
+            print(labels)
             diff = out - labels
             counter += len(np.where(diff==0)[0])
             print("+++++++++++++++++++++++++++++")
