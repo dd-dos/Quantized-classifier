@@ -117,7 +117,9 @@ def test_qtmodel(checkpoint):
     net_fp32.train()
     net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
     torch.backends.quantized.engine='fbgemm'
-    net = net.load_state_dict(torch.load(checkpoint))
+    prepared_net_fp32 = torch.quantization.prepare_qat(net_fp32).to(device)
+    net_int8 = torch.quantization.convert(prepared_net_fp32.cpu().eval())
+    net = net_int8.load_state_dict(torch.load(checkpoint))
 
     valset = torchvision.datasets.CIFAR10(root='./data', train=False,
                                         download=True, transform=transform)
@@ -152,4 +154,4 @@ def argparser():
 if __name__=="__main__":
     # args = argparser()
     # train(args)
-    print(test_qtmodel("./int8_mobilenet_v2.pth"))
+    print(test_qtmodel("/content/drive/MyDrive/training/Quantized-classifier/int8_best.pth"))
