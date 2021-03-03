@@ -132,12 +132,11 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
             torch.save(net.state_dict(), os.path.join(checkpoint, "{}_best.pth".format(bitwidths)))
 
 
-def test_qtmodel(checkpoint):
+def test_qtmodel(checkpoint, split='val'):
     net_fp32 = mobilenet_v2(num_classes=10)
     net_fp32.train()
     net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
     torch.backends.quantized.engine='fbgemm'
-    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     prepared_net_fp32 = torch.quantization.prepare_qat(net_fp32)
     net_int8 = torch.quantization.convert(prepared_net_fp32.cpu().eval())
     net_int8.load_state_dict(torch.load(checkpoint))
@@ -146,6 +145,7 @@ def test_qtmodel(checkpoint):
     transform = transforms.Compose(
         [transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+        
     valset = torchvision.datasets.CIFAR10(root='./data', train=False,
                                         download=True, transform=transform)
     valloader = torch.utils.data.DataLoader(valset, batch_size=64,
@@ -154,14 +154,18 @@ def test_qtmodel(checkpoint):
                                             download=True, transform=transform)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=64,
                                             shuffle=True, num_workers=8)
-    loader = trainloader
-    dataset = trainset
+    if split == 'train':
+        loader = trainloader
+        dataset = trainset
+    else:
+        loader = valloader
+        dataset = valset
+
     with torch.no_grad():
         num_samples = len(dataset)
         counter = 0
         for i, data in tqdm(enumerate(loader, 0)):
             inputs, labels = data
-            # inputs = inputs.to(device)
             out = net_int8(inputs).cpu().numpy()
             out = np.argmax(out, axis=1)
 
@@ -178,23 +182,31 @@ def test_fp32_model(checkpoint):
     torch.backends.quantized.engine='fbgemm'
     net_fp32 = torch.quantization.prepare_qat(net_fp32)
     net_fp32.load_state_dict(torch.load(checkpoint))
-
     net_fp32.eval()
+
     transform = transforms.Compose(
             [transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+
     valset = torchvision.datasets.CIFAR10(root='./data', train=False,
                                         download=True, transform=transform)
     valloader = torch.utils.data.DataLoader(valset, batch_size=64,
                                             shuffle=False, num_workers=8)
-    # trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
-    #                                         download=True, transform=transform)
-    # trainloader = torch.utils.data.DataLoader(trainset, batch_size=64,
-    #                                         shuffle=True, num_workers=8)
-    loader = valloader
-    dataset = valset
+    trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
+                                            download=True, transform=transform)
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=64,
+                                            shuffle=True, num_workers=8)
+
+    if split == 'train':
+        loader = trainloader
+        dataset = trainset
+    else:
+        loader = valloader
+        dataset = valset
+
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     net_fp32.to(device)
+
     with torch.no_grad():
         num_samples = len(dataset)
         counter = 0
