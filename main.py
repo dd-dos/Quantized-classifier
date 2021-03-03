@@ -140,7 +140,7 @@ def test_qtmodel(checkpoint):
     with torch.no_grad():
         num_samples = len(dataset)
         counter = 0
-        for i, data in enumerate(loader, 0):
+        for i, data in tqdm.tqdm(enumerate(loader, 0)):
             inputs, labels = data
             # inputs = inputs.to(device)
             out = net_int8(inputs).cpu().numpy()
@@ -148,8 +148,6 @@ def test_qtmodel(checkpoint):
 
             labels = labels.cpu().numpy()
             diff = out - labels
-            print(diff)
-            print("++++++++++++++++++++++++++++")
             counter += len(np.where(diff==0)[0])
     return counter/num_samples*100
 
@@ -205,5 +203,5 @@ def argparser():
 if __name__=="__main__":
     # args = argparser()
     # train(args)
-    # print(test_qtmodel("/content/drive/MyDrive/training/Quantized-classifier/int8_best.pth"))
-    print(test_fp32_model("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth"))
+    print(test_qtmodel("/content/drive/MyDrive/training/Quantized-classifier/int8_best.pth"))
+    # print(test_fp32_model("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth"))
