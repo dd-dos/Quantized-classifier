@@ -117,6 +117,7 @@ def test_qtmodel(checkpoint):
     net_fp32.train()
     net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
     torch.backends.quantized.engine='fbgemm'
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     prepared_net_fp32 = torch.quantization.prepare_qat(net_fp32).to(device)
     net_int8 = torch.quantization.convert(prepared_net_fp32.cpu().eval())
     net = net_int8.load_state_dict(torch.load(checkpoint))
@@ -127,7 +128,6 @@ def test_qtmodel(checkpoint):
                                             shuffle=False, num_workers=args.num_workers)
     with torch.no_grad():
         num_samples = len(valset)
-        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
         for i, data in enumerate(valloader, 0):
             inputs, labels = data
