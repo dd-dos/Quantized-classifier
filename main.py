@@ -126,14 +126,19 @@ def test_qtmodel(checkpoint):
     transform = transforms.Compose(
         [transforms.ToTensor(),
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-    valset = torchvision.datasets.CIFAR10(root='./data', train=False,
-                                        download=True, transform=transform)
-    valloader = torch.utils.data.DataLoader(valset, batch_size=1,
-                                            shuffle=False, num_workers=8)
+    # valset = torchvision.datasets.CIFAR10(root='./data', train=False,
+    #                                     download=True, transform=transform)
+    # valloader = torch.utils.data.DataLoader(valset, batch_size=1,
+    #                                         shuffle=False, num_workers=8)
+    trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
+                                            download=True, transform=transform)
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=64,
+                                            shuffle=True, num_workers=8)
+    loader = trainloader
     with torch.no_grad():
         num_samples = len(valset)
         counter = 0
-        for i, data in enumerate(valloader, 0):
+        for i, data in enumerate(loader, 0):
             inputs, labels = data
             # inputs = inputs.to(device)
             out = net_int8(inputs).cpu().numpy()
@@ -160,10 +165,10 @@ def test_fp32_model(checkpoint):
     transform = transforms.Compose(
             [transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-    valset = torchvision.datasets.CIFAR10(root='./data', train=False,
-                                        download=True, transform=transform)
-    valloader = torch.utils.data.DataLoader(valset, batch_size=64,
-                                            shuffle=False, num_workers=8)
+    # valset = torchvision.datasets.CIFAR10(root='./data', train=False,
+    #                                     download=True, transform=transform)
+    # valloader = torch.utils.data.DataLoader(valset, batch_size=64,
+    #                                         shuffle=False, num_workers=8)
     
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     with torch.no_grad():
