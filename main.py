@@ -136,12 +136,14 @@ def test_qtmodel(checkpoint):
             inputs, labels = data
             # inputs = inputs.to(device)
             out = net_int8(inputs).cpu().numpy()
+            print(out)
             out = np.argmax(out, axis=1)
 
             labels = labels.cpu().numpy()
+            print(label)
             diff = out - labels
             counter += len(np.where(diff==0)[0])
-        
+            print("+++++++++++++++++++++++++++++")
     return counter/num_samples*100
             
 def argparser():
