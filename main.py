@@ -175,6 +175,7 @@ def test_fp32_model(checkpoint):
                                             shuffle=True, num_workers=8)
     loader = trainloader
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    net_fp32.to(device)
     with torch.no_grad():
         num_samples = len(trainset)
         counter = 0
