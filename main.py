@@ -10,7 +10,8 @@ import numpy as np
 
 from torchvision.models.quantization import mobilenet_v2
 from tqdm import tqdm
-BEST = np.inf
+BEST_ACC = 0
+
 def train(args):
     os.makedirs(args.cp, exist_ok=True)
     transform = transforms.Compose(
@@ -44,6 +45,7 @@ def train(args):
     optimizer = optim.SGD(prepared_net_fp32.parameters(), lr=0.001, momentum=0.9)
     for epoch in range(args.num_epoches):
         running_loss = 0.0
+        counter = 0.0
         print("training phase:")
         for i, data in enumerate(trainloader, 0):
             # get the inputs; data is a list of [inputs, labels]
@@ -62,10 +64,18 @@ def train(args):
 
             # print statistics
             running_loss += loss.item()
+            outputs = outputs.cpu().numpy()
+            outputs = np.argmax(outputs, axis=1)
+            labels = labels.cpu().numpy()
+            diff = out - labels
+            counter += len(np.where(diff==0)[0])
+
             if i % 35 == 34:    
-                print('[%d, %5d] loss: %.3f' %
-                    (epoch + 1, i + 1, running_loss / (35*args.batch_size)))
+                accuracy = counter / (35*args.batch_size)
+                print('[%d, %5d] loss: %.3f - acc: %.3f' %
+                    (epoch + 1, i + 1, running_loss / (35*args.batch_size), accuracy))
                 running_loss = 0.0
+                counter = 0
 
         print("int8 evaluation phase:")
         net_int8 = torch.quantization.convert(prepared_net_fp32.cpu().eval())
@@ -87,11 +97,13 @@ def train(args):
 
 def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths): 
     with torch.no_grad():
-        global BEST
+        global BEST_ACC
         num_samples = len(valset)
         
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         running_loss = 0.0
+        counter = 0.0
+
         for i, data in enumerate(valloader, 0):
             inputs, labels = data
 
@@ -105,11 +117,18 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
 
             running_loss += loss.item()
 
+            outputs = outputs.cpu().numpy()
+            outputs = np.argmax(outputs, axis=1)
+            labels = labels.cpu().numpy()
+            diff = out - labels
+            counter += len(np.where(diff==0)[0])
+
+        accuracy = counter/num_samples
         average_loss = running_loss/num_samples
-        print("val loss: {}".format(average_loss))
-        if average_loss < BEST:
-            BEST = average_loss
-            print("saving model at {}".format(checkpoint))
+        print("=> val loss: {} - val acc: {}".format(average_loss, accuracy))
+        if accuracy > BEST_ACC:
+            BEST_ACC = accuracy
+            print("==> saving model at {}".format(checkpoint))
             torch.save(net.state_dict(), os.path.join(checkpoint, "{}_best.pth".format(bitwidths)))
 
 
