@@ -122,6 +122,9 @@ def test_qtmodel(checkpoint):
     net_int8 = torch.quantization.convert(prepared_net_fp32.cpu().eval())
     net = net_int8.load_state_dict(torch.load(checkpoint))
 
+    transform = transforms.Compose(
+        [transforms.ToTensor(),
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
     valset = torchvision.datasets.CIFAR10(root='./data', train=False,
                                         download=True, transform=transform)
     valloader = torch.utils.data.DataLoader(valset, batch_size=args.batch_size,
