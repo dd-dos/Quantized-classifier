@@ -140,7 +140,7 @@ def test_qtmodel(checkpoint, split='val'):
     torch.backends.quantized.engine='fbgemm'
     # prepared_net_fp32 = torch.quantization.prepare_qat(net_fp32, inplace=True)
     # prepared_net_fp32.load_state_dict(torch.load(checkpoint))
-    net_int8 = torch.quantization.convert(prepared_net_fp32.cpu().eval())
+    net_int8 = torch.quantization.convert(net_fp32.cpu().eval())
     net_int8.load_state_dict(torch.load(checkpoint))
     # print(torch.load(checkpoint))
     net_int8.eval()
