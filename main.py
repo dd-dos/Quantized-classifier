@@ -67,7 +67,7 @@ def train(args):
             outputs = outputs.detach().cpu().numpy()
             outputs = np.argmax(outputs, axis=1)
             labels = labels.cpu().numpy()
-            diff = out - labels
+            diff = outputs - labels
             counter += len(np.where(diff==0)[0])
 
             if i % 35 == 34:    
