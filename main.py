@@ -141,8 +141,9 @@ def test_qtmodel(checkpoint, split='val'):
     prepared_net_fp32 = torch.quantization.prepare_qat(net_fp32)
     net_int8 = torch.quantization.convert(prepared_net_fp32.cpu().eval())
     net_int8.load_state_dict(torch.load(checkpoint))
-    for name, param in net_int8.named_parameters():
-        print("name: {} - param: {} \n".format(name, param))
+    print(torch.load(checkpoint))
+    # for name, param in net_int8.named_parameters():
+    #     print("name: {} - param: {} \n".format(name, param))
     net_int8.eval()
 
     transform = transforms.Compose(
