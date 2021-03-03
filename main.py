@@ -120,8 +120,7 @@ def test_qtmodel(checkpoint):
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     prepared_net_fp32 = torch.quantization.prepare_qat(net_fp32).to(device)
     net_int8 = torch.quantization.convert(prepared_net_fp32.cpu().eval())
-    net = net_int8.load_state_dict(torch.load(checkpoint))
-    print(torch.load(checkpoint))
+    net_int8.load_state_dict(torch.load(checkpoint))
 
     transform = transforms.Compose(
         [transforms.ToTensor(),
@@ -136,8 +135,7 @@ def test_qtmodel(checkpoint):
         for i, data in enumerate(valloader, 0):
             inputs, labels = data
             inputs = inputs.to(device)
-            print(net)
-            out = net(inputs).cpu().numpy()
+            out = net_int8(inputs).cpu().numpy()
             out = np.argmax(out, axis=1)
 
             labels = labels.cpu().numpy()
