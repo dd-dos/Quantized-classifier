@@ -140,7 +140,7 @@ def test_qtmodel(checkpoint):
     with torch.no_grad():
         num_samples = len(dataset)
         counter = 0
-        for i, data in tqdm.tqdm(enumerate(loader, 0)):
+        for i, data in tqdm(enumerate(loader, 0)):
             inputs, labels = data
             # inputs = inputs.to(device)
             out = net_int8(inputs).cpu().numpy()
