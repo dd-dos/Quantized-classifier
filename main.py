@@ -131,12 +131,12 @@ def test_qtmodel(checkpoint):
                                         download=True, transform=transform)
     valloader = torch.utils.data.DataLoader(valset, batch_size=64,
                                             shuffle=False, num_workers=8)
-    # trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
-    #                                         download=True, transform=transform)
-    # trainloader = torch.utils.data.DataLoader(trainset, batch_size=64,
-    #                                         shuffle=True, num_workers=8)
-    loader = valloader
-    dataset = valset
+    trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
+                                            download=True, transform=transform)
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=64,
+                                            shuffle=True, num_workers=8)
+    loader = trainloader
+    dataset = trainset
     with torch.no_grad():
         num_samples = len(dataset)
         counter = 0
