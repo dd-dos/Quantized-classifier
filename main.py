@@ -120,12 +120,12 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
             outputs = outputs.cpu().numpy()
             outputs = np.argmax(outputs, axis=1)
             labels = labels.cpu().numpy()
-            diff = out - labels
+            diff = outputs - labels
             counter += len(np.where(diff==0)[0])
 
         accuracy = counter/num_samples
         average_loss = running_loss/num_samples
-        print("=> val loss: {} - val acc: {}".format(average_loss, accuracy))
+        print("=> val loss: {:.3f} - val acc: {:.3f}".format(average_loss, accuracy))
         if accuracy > BEST_ACC:
             BEST_ACC = accuracy
             print("==> saving model at {}".format(checkpoint))
