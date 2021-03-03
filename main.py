@@ -149,7 +149,7 @@ def test_qtmodel(checkpoint):
 
 def test_fp32_model(checkpoint):
     net_fp32 = mobilenet_v2(num_classes=10)
-    net_fp32.load_state_dict(checkpoint)
+    net_fp32.load_state_dict(torch.load(checkpoint))
     transform = transforms.Compose(
             [transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
