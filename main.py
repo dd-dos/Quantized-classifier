@@ -136,8 +136,8 @@ def test_qtmodel(checkpoint):
             inputs, labels = data
             # inputs = inputs.to(device)
             out = net_int8(inputs).cpu().numpy()
-            print(out)
             out = np.argmax(out, axis=1)
+            print(out)
 
             labels = labels.cpu().numpy()
             print(labels)
