@@ -135,6 +135,7 @@ def test_qtmodel(checkpoint):
         for i, data in enumerate(valloader, 0):
             inputs, labels = data
             inputs = inputs.to(device)
+            print(net)
             out = net(inputs).cpu().numpy()
             out = np.argmax(out, axis=1)
 
