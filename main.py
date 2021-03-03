@@ -207,7 +207,8 @@ def test_fp32_model(checkpoint, split='val'):
         loader = valloader
         dataset = valset
 
-    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    # device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    device = 'cpu'
     net_fp32.to(device)
 
     with torch.no_grad():
@@ -237,5 +238,5 @@ def argparser():
 if __name__=="__main__":
     # args = argparser()
     # train(args)
-    print(test_qtmodel("/content/drive/MyDrive/training/Quantized-classifier/int8_best.pth", split='val'))
-    # print(test_fp32_model("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth"))
+    # print(test_qtmodel("/content/drive/MyDrive/training/Quantized-classifier/int8_best.pth", split='val'))
+    print(test_fp32_model("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth", split='val'))
