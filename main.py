@@ -65,7 +65,7 @@ def train(args):
                 print('[%d, %5d] loss: %.3f' %
                     (epoch + 1, i + 1, running_loss / (35*args.batch_size)))
                 running_loss = 0.0
-                
+
         print("int8 evaluation phase:")
         net_int8 = torch.quantization.convert(prepared_net_fp32.cpu().eval())
         evaluation(args, net_int8, valloader, criterion, valset, args.cp, bitwidths='int8')
@@ -112,6 +112,39 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
             torch.save(net.state_dict(), os.path.join(checkpoint, "{}_best.pth".format(bitwidths)))
 
 
+def test_qtmodel(checkpoint):
+    net_fp32 = mobilenet_v2(num_classes=10)
+    net_fp32.train()
+    net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
+    torch.backends.quantized.engine='fbgemm'
+    import ipdb; ipdb.set_trace()
+    net = net.load_state_dict(torch.load(checkpoint))
+
+    valset = torchvision.datasets.CIFAR10(root='./data', train=False,
+                                        download=True, transform=transform)
+    valloader = torch.utils.data.DataLoader(valset, batch_size=args.batch_size,
+                                            shuffle=False, num_workers=args.num_workers)
+    with torch.no_grad():
+        num_samples = len(valset)
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        running_loss = 0.0
+        for i, data in enumerate(valloader, 0):
+            inputs, labels = data
+
+            outputs = net(inputs)
+            import ipdb; ipdb.set_trace()
+            loss = criterion(outputs, labels)
+
+            running_loss += loss.item()
+
+        average_loss = running_loss/num_samples
+        print("val loss: {}".format(average_loss))
+        if average_loss < BEST:
+            BEST = average_loss
+            print("saving model at {}".format(checkpoint))
+            torch.save(net.state_dict(), os.path.join(checkpoint, "{}_best.pth".format(bitwidths)))
+
+
 def argparser():
     P = argparse.ArgumentParser(description='Cifar-10 classifier')
     P.add_argument('--batch_size', type=int, required=True, help='batch size')
@@ -123,5 +156,6 @@ def argparser():
     return args
 
 if __name__=="__main__":
-    args = argparser()
-    train(args)
+    # args = argparser()
+    # train(args)
+    test_qtmodel("./int8_mobilenet_v2.pth")
