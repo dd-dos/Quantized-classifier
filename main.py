@@ -92,8 +92,8 @@ def train(args):
 
     prepared_net_fp32.eval()
     net_int8 = torch.quantization.convert(prepared_net_fp32)
-    torch.save(prepared_net_fp32, os.path.join(args.cp, "last_fp32.pth"))
-    torch.save(net_int8, os.path.join(args.cp, "last_int8.pth"))
+    torch.save(prepared_net_fp32.state_dict(), os.path.join(args.cp, "last_fp32.pth"))
+    torch.save(net_int8.state_dict(), os.path.join(args.cp, "last_int8.pth"))
 
 
 def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths): 
