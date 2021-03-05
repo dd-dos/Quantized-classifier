@@ -38,7 +38,7 @@ def train(args):
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     prepared_net_fp32 = torch.quantization.prepare_qat(net_fp32).to(device)
-    prepared_net_fp32.load_state_dict(torch.load("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth"))
+    # prepared_net_fp32.load_state_dict(torch.load("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth"))
     '''
     training loop start here
     '''
