@@ -80,9 +80,9 @@ def train(args):
 
         print("=> int8 evaluation phase:")
         net_int8 = torch.quantization.convert(prepared_net_fp32.cpu().eval())
-        evaluation(args, net_int8, valloader, criterion, valset, args.cp, bitwidths='int8')
+        evaluation(args, net_int8.state_dict(), valloader, criterion, valset, args.cp, bitwidths='int8')
         print("=> fp32 evaluation phase:")
-        evaluation(args, prepared_net_fp32, valloader, criterion, valset, args.cp, bitwidths='fp32')
+        evaluation(args, prepared_net_fp32.state_dict(), valloader, criterion, valset, args.cp, bitwidths='fp32')
 
     
     '''
