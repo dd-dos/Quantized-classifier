@@ -143,7 +143,6 @@ def test_qtmodel(checkpoint, split='val'):
     net_int8 = torch.quantization.convert(prepared_net_fp32.cpu().eval())
     net_int8.load_state_dict(torch.load(checkpoint))
     # print(torch.load(checkpoint))
-    torch.save(net_int8, "test_net_int8.pth")
     net_int8.eval()
 
     transform = transforms.Compose(
