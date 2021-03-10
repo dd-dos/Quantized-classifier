@@ -241,7 +241,7 @@ def argparser():
 
 if __name__=="__main__":
     args = argparser()
-    if args.mode == train:
+    if args.mode == 'train':
         train(args)
     elif args.mode == 'test_int8':
         print(test_int8("/content/drive/MyDrive/training/Quantized-classifier/int8_best.pth", split='val'))
