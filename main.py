@@ -37,10 +37,10 @@ def train(args):
     torch.backends.quantized.engine='fbgemm'
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    prepared_net_fp32 = torch.quantization.prepare_qat(net_fp32).to(device)
+    prepared_net_fp32 = torch.quantization.prepare_qat(net_fp32)
 
     if args.pretrained:
-        prepared_net_fp32.load_state_dict(torch.load(args.pretrained))
+        prepared_net_fp32.load_state_dict(torch.load(args.pretrained)).to(device)
     '''
     training loop start here
     '''
