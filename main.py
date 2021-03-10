@@ -135,7 +135,7 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
             torch.save(net.state_dict(), os.path.join(checkpoint, "{}_best.pth".format(bitwidths)))
 
 
-def test_qtmodel(checkpoint, split='val'):
+def test_int8(checkpoint, split='val'):
     net_fp32 = mobilenet_v2(num_classes=10)
     net_fp32.train()
     net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
@@ -180,7 +180,7 @@ def test_qtmodel(checkpoint, split='val'):
     return counter/num_samples*100
 
 
-def test_fp32_model(checkpoint, split='val'):
+def test_fp32(checkpoint, split='val'):
     net_fp32 = mobilenet_v2(num_classes=10)
     net_fp32.train()
     net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
@@ -244,6 +244,6 @@ if __name__=="__main__":
     if args.mode == train:
         train(args)
     elif args.mode == 'test_int8':
-        print(test_qtmodel("/content/drive/MyDrive/training/Quantized-classifier/int8_best.pth", split='val'))
+        print(test_int8("/content/drive/MyDrive/training/Quantized-classifier/int8_best.pth", split='val'))
     elif args.mode == 'test_fp32':
-        print(test_fp32_model("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth", split='val'))
+        print(test_fp32("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth", split='val'))
