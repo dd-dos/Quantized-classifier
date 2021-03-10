@@ -45,8 +45,7 @@ def train(args):
     training loop start here
     '''
     criterion = nn.CrossEntropyLoss().to(device)
-    # optimizer = optim.SGD(prepared_net_fp32.parameters(), lr=0.001, momentum=0.9)
-    optimizer = optim.ADAM(prepared_net_fp32.parameters(), lr=1e-4)
+    optimizer = optim.SGD(prepared_net_fp32.parameters(), lr=0.001, momentum=0.9)
     for epoch in range(args.num_epoches):
         running_loss = 0.0
         counter = 0.0
@@ -136,7 +135,7 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
             torch.save(net.state_dict(), os.path.join(checkpoint, "{}_best.pth".format(bitwidths)))
 
 
-def test_int8(checkpoint, split='val'):
+def test_qtmodel(checkpoint, split='val'):
     net_fp32 = mobilenet_v2(num_classes=10)
     net_fp32.train()
     net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
@@ -178,11 +177,10 @@ def test_int8(checkpoint, split='val'):
             labels = labels.cpu().numpy()
             diff = out - labels
             counter += len(np.where(diff==0)[0])
-        elif args.mode == return counter/num_sam    ples*
-    'test_fp32':    100
+    return counter/num_samples*100
 
 
-def test_fp32(checkpoint, split='val'):
+def test_fp32_model(checkpoint, split='val'):
     net_fp32 = mobilenet_v2(num_classes=10)
     net_fp32.train()
     net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
@@ -246,6 +244,6 @@ if __name__=="__main__":
     if args.mode == train:
         train(args)
     elif args.mode == 'test_int8':
-        print(test_int8("/content/drive/MyDrive/training/Quantized-classifier/int8_best.pth", split='val'))
+        print(test_qtmodel("/content/drive/MyDrive/training/Quantized-classifier/int8_best.pth", split='val'))
     elif args.mode == 'test_fp32':
-        print(test_fp32("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth", split='val'))
+        print(test_fp32_model("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth", split='val'))
