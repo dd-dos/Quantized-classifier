@@ -83,7 +83,6 @@ def train(args):
                     (epoch + 1, i + 1, running_loss / (35*args.batch_size), accuracy))
                 running_loss = 0.0
                 counter = 0
-            break
 
         print("=> int8 evaluation phase:")
         net_int8 = torch.quantization.convert(prepared_net_fp32.cpu().eval())
