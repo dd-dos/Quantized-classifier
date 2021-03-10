@@ -36,21 +36,24 @@ def train(args):
     net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
     torch.backends.quantized.engine='fbgemm'
 
-    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     prepared_net_fp32 = torch.quantization.prepare_qat(net_fp32)
 
     if args.pretrained:
-        prepared_net_fp32.load_state_dict(torch.load(args.pretrained)).to(device)
+        print("=> Using pretrained model: {}".format(args.pretrained))
+        prepared_net_fp32.load_state_dict(torch.load(args.pretrained))
+    
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    prepared_net_fp32.to(device)    
     '''
     training loop start here
     '''
     criterion = nn.CrossEntropyLoss().to(device)
     # optimizer = optim.SGD(prepared_net_fp32.parameters(), lr=0.001, momentum=0.9)
-    optimizer = optim.ADAM(prepared_net_fp32.parameters(), lr=1e-4)
+    optimizer = optim.Adam(prepared_net_fp32.parameters(), lr=1e-4)
     for epoch in range(args.num_epoches):
         running_loss = 0.0
         counter = 0.0
-        print("=> training phase:")
+        print("=> Training phase:")
         for i, data in enumerate(trainloader, 0):
             # get the inputs; data is a list of [inputs, labels]
             inputs, labels = data
@@ -80,6 +83,7 @@ def train(args):
                     (epoch + 1, i + 1, running_loss / (35*args.batch_size), accuracy))
                 running_loss = 0.0
                 counter = 0
+            break
 
         print("=> int8 evaluation phase:")
         net_int8 = torch.quantization.convert(prepared_net_fp32.cpu().eval())
@@ -91,9 +95,9 @@ def train(args):
     '''
     training loop end here
     '''
-    print('Finished Training')
+    print('=> Finished training')
 
-    prepared_net_fp32.eval()
+    prepared_net_fp32.cpu().eval()
     net_int8 = torch.quantization.convert(prepared_net_fp32)
     torch.save(prepared_net_fp32.state_dict(), os.path.join(args.cp, "last_fp32.pth"))
     torch.save(net_int8.state_dict(), os.path.join(args.cp, "last_int8.pth"))
@@ -129,10 +133,10 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
 
         accuracy = counter/num_samples
         average_loss = running_loss/num_samples
-        print("==> val loss: {:.3f} - val acc: {:.3f}".format(average_loss, accuracy))
+        print("==> Val loss: {:.3f} - Val acc: {:.3f}".format(average_loss, accuracy))
         if accuracy > BEST_ACC:
             BEST_ACC = accuracy
-            print("===> saving model at {}".format(checkpoint))
+            print("===> Saving model at {}".format(checkpoint))
             torch.save(net.state_dict(), os.path.join(checkpoint, "{}_best.pth".format(bitwidths)))
 
 
@@ -147,6 +151,9 @@ def test_int8(checkpoint, split='val'):
     net_int8.load_state_dict(torch.load(checkpoint))
     # print(torch.load(checkpoint))
     net_int8.eval()
+    
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    # net_int8.to(device)
 
     transform = transforms.Compose(
         [transforms.ToTensor(),
@@ -172,6 +179,7 @@ def test_int8(checkpoint, split='val'):
         counter = 0
         for i, data in tqdm(enumerate(loader, 0)):
             inputs, labels = data
+            # inputs = inputs.to(device)
             out = net_int8(inputs).cpu().numpy()
             out = np.argmax(out, axis=1)
 
@@ -210,7 +218,7 @@ def test_fp32(checkpoint, split='val'):
         loader = valloader
         dataset = valset
 
-    # device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     device = 'cpu'
     net_fp32.to(device)
 
@@ -228,13 +236,14 @@ def test_fp32(checkpoint, split='val'):
             counter += len(np.where(diff==0)[0])
     return counter/num_samples*100
 
+
 def argparser():
     P = argparse.ArgumentParser(description='Cifar-10 classifier')
     P.add_argument('--mode', type=str, default='train', help='mode: train, test_int8 or test_fp32')
     P.add_argument('--batch_size', type=int, default=64, help='batch size')
     P.add_argument('--num_workers', type=int, default=8, help='number of workers')
     P.add_argument('--cp', type=str, required=True, help='checkpoint')
-    P.add_argument('--num_epoches', type=int, default=666, help='number of epoches')
+    P.add_argument('--num_epoches', type=int, default=100, help='number of epoches')
     P.add_argument('--pretrained', type=str, help='pretrained path')
     args = P.parse_args()
 
@@ -245,6 +254,8 @@ if __name__=="__main__":
     if args.mode == 'train':
         train(args)
     elif args.mode == 'test_int8':
-        print(test_int8("/content/drive/MyDrive/training/Quantized-classifier/int8_best.pth", split='val'))
+        # print(test_int8("/content/drive/MyDrive/training/Quantized-classifier/Test/int8_best.pth", split='val'))
+        print(test_int8("./int8.pth", split='val'))
     elif args.mode == 'test_fp32':
-        print(test_fp32("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth", split='val'))
+        # print(test_fp32("/content/drive/MyDrive/training/Quantized-classifier/Test/fp32_best.pth", split='val'))
+        print(test_fp32("./fp32.pth", split='val'))
