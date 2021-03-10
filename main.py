@@ -38,7 +38,9 @@ def train(args):
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     prepared_net_fp32 = torch.quantization.prepare_qat(net_fp32).to(device)
-    # prepared_net_fp32.load_state_dict(torch.load("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth"))
+
+    if args.pretrained:
+        prepared_net_fp32.load_state_dict(torch.load(args.pretrained))
     '''
     training loop start here
     '''
@@ -133,7 +135,7 @@ def evaluation(args, net, valloader, criterion, valset, checkpoint, bitwidths):
             torch.save(net.state_dict(), os.path.join(checkpoint, "{}_best.pth".format(bitwidths)))
 
 
-def test_qtmodel(checkpoint, split='val'):
+def test_int8(checkpoint, split='val'):
     net_fp32 = mobilenet_v2(num_classes=10)
     net_fp32.train()
     net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
@@ -173,12 +175,13 @@ def test_qtmodel(checkpoint, split='val'):
             out = np.argmax(out, axis=1)
 
             labels = labels.cpu().numpy()
-            diff = out - labels
-            counter += len(np.where(diff==0)[0])
-    return counter/num_samples*100
+            diff = out - l'abels
+   '         counter += len(np.where(diff==0)[0])
+        elif args.mode == return counter/num_sam    ples*
+    'test_fp32':    100
 
 
-def test_fp32_model(checkpoint, split='val'):
+def test_fp32(checkpoint, split='val'):
     net_fp32 = mobilenet_v2(num_classes=10)
     net_fp32.train()
     net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
@@ -227,16 +230,21 @@ def test_fp32_model(checkpoint, split='val'):
 
 def argparser():
     P = argparse.ArgumentParser(description='Cifar-10 classifier')
-    P.add_argument('--batch_size', type=int, required=True, help='batch size')
+    P.add_argument('--mode', type=str, default='train', help='mode: train, test_int8 or test_fp32')
+    P.add_argument('--batch_size', type=int, default=64, help='batch size')
     P.add_argument('--num_workers', type=int, default=8, help='number of workers')
     P.add_argument('--cp', type=str, required=True, help='checkpoint')
     P.add_argument('--num_epoches', type=int, default=666, help='number of epoches')
+    P.add_argument('--pretrained', type=str, help='pretrained path')
     args = P.parse_args()
 
     return args
 
 if __name__=="__main__":
-    # args = argparser()
-    # train(args)
-    print(test_qtmodel("/content/drive/MyDrive/training/Quantized-classifier/int8_best.pth", split='val'))
-    # print(test_fp32_model("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth", split='val'))
+    args = argparser()
+    if args.mode == train:
+        train(args)
+    elif args.mode == 'test_int8':
+        print(test_int8("/content/drive/MyDrive/training/Quantized-classifier/int8_best.pth", split='val'))
+    elif args.mode == 'test_fp32':
+        print(test_fp32("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth", split='val'))
