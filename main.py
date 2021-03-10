@@ -176,8 +176,8 @@ def test_int8(checkpoint, split='val'):
             out = np.argmax(out, axis=1)
 
             labels = labels.cpu().numpy()
-            diff = out - l'abels
-   '         counter += len(np.where(diff==0)[0])
+            diff = out - labels
+            counter += len(np.where(diff==0)[0])
         elif args.mode == return counter/num_sam    ples*
     'test_fp32':    100
 
