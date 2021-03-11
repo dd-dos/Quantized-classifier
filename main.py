@@ -218,7 +218,7 @@ def test_fp32(checkpoint, split='val'):
         dataset = valset
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    device = 'cpu'
+    # device = 'cpu'
     net_fp32.to(device)
 
     with torch.no_grad():
@@ -236,9 +236,58 @@ def test_fp32(checkpoint, split='val'):
     return counter/num_samples*100
 
 
+def test_32to8(checkpoiint, split='val')
+    net_fp32 = mobilenet_v2(num_classes=10)
+    net_fp32.train()
+    net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
+    torch.backends.quantized.engine='fbgemm'
+    prepared_net_fp32 = torch.quantization.prepare_qat(net_fp32)
+    prepared_net_fp32.load_state_dict(torch.load("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth"))
+    net_int8 = torch.quantization.convert(prepared_net_fp32.cpu().eval())
+    # net_int8.load_state_dict(torch.load(checkpoint))
+    # print(torch.load(checkpoint))
+    net_int8.eval()
+    
+    # device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    # net_int8.to(device)
+
+    transform = transforms.Compose(
+        [transforms.ToTensor(),
+        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+
+    valset = torchvision.datasets.CIFAR10(root='./data', train=False,
+                                        download=True, transform=transform)
+    valloader = torch.utils.data.DataLoader(valset, batch_size=64,
+                                            shuffle=False, num_workers=8)
+    trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
+                                            download=True, transform=transform)
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=64,
+                                            shuffle=True, num_workers=8)
+    if split == 'train':
+        loader = trainloader
+        dataset = trainset
+    else:
+        loader = valloader
+        dataset = valset
+
+    with torch.no_grad():
+        num_samples = len(dataset)
+        counter = 0
+        for i, data in tqdm(enumerate(loader, 0)):
+            inputs, labels = data
+            # inputs = inputs.to(device)
+            out = net_int8(inputs).cpu().numpy()
+            out = np.argmax(out, axis=1)
+
+            labels = labels.cpu().numpy()
+            diff = out - labels
+            counter += len(np.where(diff==0)[0])
+    return counter/num_samples*100
+
+
 def argparser():
     P = argparse.ArgumentParser(description='Cifar-10 classifier')
-    P.add_argument('--mode', type=str, default='train', help='mode: train, test_int8 or test_fp32')
+    P.add_argument('--mode', type=str, default='train', help='mode: train, test_int8, test_fp32, or test_32to8')
     P.add_argument('--batch_size', type=int, default=64, help='batch size')
     P.add_argument('--num_workers', type=int, default=8, help='number of workers')
     P.add_argument('--cp', type=str, required=True, help='checkpoint')
@@ -253,8 +302,8 @@ if __name__=="__main__":
     if args.mode == 'train':
         train(args)
     elif args.mode == 'test_int8':
-        # print(test_int8("/content/drive/MyDrive/training/Quantized-classifier/Test/int8_best.pth", split='val'))
-        print(test_int8("./int8.pth", split='val'))
+        print(test_int8(args.pretrained, split='val'))
     elif args.mode == 'test_fp32':
-        # print(test_fp32("/content/drive/MyDrive/training/Quantized-classifier/Test/fp32_best.pth", split='val'))
-        print(test_fp32("./fp32.pth", split='val'))
+        print(test_fp32(args.pretrained, split='val'))
+    elif args.mode == 'test_32to8':
+        print(test_32to8(args.pretrained, split='val'))
