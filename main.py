@@ -236,13 +236,13 @@ def test_fp32(checkpoint, split='val'):
     return counter/num_samples*100
 
 
-def test_32to8(checkpoiint, split='val'):
+def test_32to8(checkpoint, split='val'):
     net_fp32 = mobilenet_v2(num_classes=10)
     net_fp32.train()
     net_fp32.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm') #fbgemm for pc; qnnpack for mobile
     torch.backends.quantized.engine='fbgemm'
     prepared_net_fp32 = torch.quantization.prepare_qat(net_fp32)
-    prepared_net_fp32.load_state_dict(torch.load("/content/drive/MyDrive/training/Quantized-classifier/fp32_best.pth"))
+    prepared_net_fp32.load_state_dict(torch.load(checkpoint))
     net_int8 = torch.quantization.convert(prepared_net_fp32.cpu().eval())
     # net_int8.load_state_dict(torch.load(checkpoint))
     # print(torch.load(checkpoint))
